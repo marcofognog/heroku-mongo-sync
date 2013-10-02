@@ -9,8 +9,6 @@ module Heroku::Command
     end
 
     def push
-      collection_names = @args.any? ? @args : nil
-      pretty_collection_names = collection_names ? collection_names.join(",") : "ALL DATA"
       display "THIS WILL REPLACE #{pretty_collection_names} IN #{app} ON #{heroku_mongo_uri.host} WITH #{local_mongo_uri.host}"
       display "Are you sure? (y/n) ", false
       return unless ask.downcase == 'y'
@@ -18,11 +16,21 @@ module Heroku::Command
     end
 
     def pull
-      display "Replacing the #{app} db at #{local_mongo_uri.host} with #{heroku_mongo_uri.host}"
+      display "THIS WILL REPLACE #{pretty_collection_names} IN #{app} ON #{local_mongo_uri.host} WITH #{heroku_mongo_uri.host}"
+      display "Are you sure? (y/n) ", false
+      return unless ask.downcase == 'y'
       transfer(heroku_mongo_uri, local_mongo_uri, collection_names)
     end
 
     protected
+      def collection_names
+        @args.any? ? @args : nil
+      end
+
+      def pretty_collection_names
+        collection_names ? collection_names.join(",") : "ALL DATA"
+      end
+
       def transfer(from, to, collection_names=nil)
         raise "The destination and origin URL cannot be the same." if from == to
         origin = make_connection(from)
