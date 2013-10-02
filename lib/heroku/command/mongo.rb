@@ -9,24 +9,26 @@ module Heroku::Command
     end
 
     def push
-      display "THIS WILL REPLACE ALL DATA for #{app} ON #{heroku_mongo_uri.host} WITH #{local_mongo_uri.host}"
+      collections = @args.any? ? @args : nil
+      pretty_collections = collections ? collections.join(",") : "ALL DATA"
+      display "THIS WILL REPLACE #{pretty_collections} IN #{app} ON #{heroku_mongo_uri.host} WITH #{local_mongo_uri.host}"
       display "Are you sure? (y/n) ", false
       return unless ask.downcase == 'y'
-      transfer(local_mongo_uri, heroku_mongo_uri)
+      transfer(local_mongo_uri, heroku_mongo_uri, collections)
     end
 
     def pull
       display "Replacing the #{app} db at #{local_mongo_uri.host} with #{heroku_mongo_uri.host}"
-      transfer(heroku_mongo_uri, local_mongo_uri)
+      transfer(heroku_mongo_uri, local_mongo_uri, collections)
     end
 
     protected
-      def transfer(from, to)
+      def transfer(from, to, collections=nil)
         raise "The destination and origin URL cannot be the same." if from == to
         origin = make_connection(from)
         dest   = make_connection(to)
 
-        origin.collections.each do |col|
+        (collections || origin.collections).each do |col|
           next if col.name =~ /^system\./
 
           dest.drop_collection(col.name)

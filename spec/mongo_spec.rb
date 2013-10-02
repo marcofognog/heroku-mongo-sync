@@ -68,6 +68,17 @@ describe Heroku::Command::Mongo do
       @to.collection('a').find_one(:id => 1)['name'].should == 'first'
     end
 
+    it "transfers only the specified collections" do
+      @from.create_collection('a')
+      @from.create_collection('b')
+      @from.create_collection('c')
+
+      @mongo.send(:transfer, @from_uri, @to_uri, ['b', 'c'])
+      @to.collection_names.should_not include('a')
+      @to.collection_names.should include('b')
+      @to.collection_names.should include('c')
+    end
+
     it "replaces existing data" do
       col1 = @from.create_collection('a')
       col1.insert(:id => 1, :name => 'first')
