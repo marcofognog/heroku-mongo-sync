@@ -32,9 +32,11 @@ module Heroku::Command
           dest.drop_collection(col.name)
           dest_col = dest.create_collection(col.name)
 
+          count = col.size
+          name = col.name
           col.find().each_with_index do |record, index|
             dest_col.insert record
-            display_progress(col, index)
+            display_progress(name, index, count)
           end
 
           display "\n done"
@@ -80,19 +82,19 @@ module Heroku::Command
         error("Could not connect to the mongo server at #{uri}")
       end
 
-      def display_progress(col, index)
-        count = col.size
-        if (index + 1) % step(col) == 0
+      def display_progress(name, index, count)
+        current_iteration = index + 1
+        if current_iteration % step(count) == 0
           display(
-            "\r#{"Syncing #{col.name}: %d of %d (%.2f%%)... " %
-            [(index+1), count, ((index+1).to_f/count * 100)]}",
+            "\r#{"Syncing #{name}: %d of %d (%.2f%%)... " %
+            [current_iteration, count, (current_iteration.to_f/count * 100)]}",
             false
           )
         end
       end
 
-      def step(col)
-        step  = col.size / 100000 # 1/1000 of a percent
+      def step(count)
+        step  = count / 100000 # 1/1000 of a percent
         step  = 1 if step == 0
       end
 
