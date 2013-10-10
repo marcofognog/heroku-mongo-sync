@@ -43,13 +43,23 @@ module Heroku::Command
         end
 
         display "Syncing indexes...", false
+
+        errors = []
         dest_index_col = dest.collection('system.indexes')
         origin_index_col = origin.collection('system.indexes')
         origin_index_col.find().each do |index|
-          index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
-          dest_index_col.insert index
+          begin
+            index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
+            dest_index_col.insert index
+          rescue => e
+            errors << [index, e]
+          end
         end
         display " done"
+
+        if errors.any?
+          finish_with_errors errors
+        end
       end
 
       def heroku_mongo_uri
@@ -96,6 +106,21 @@ module Heroku::Command
       def step(count)
         step  = count / 100000 # 1/1000 of a percent
         step  = 1 if step == 0
+      end
+
+      def display_errors errors
+        errors.each do |error|
+          index, e = *error
+          display "Could not insert index #{index["name"]} on #{index["ns"]}"
+          display "  reason: #{e.message}"
+        end
+      end
+
+      def finish_with_errors error
+        display ""
+        display_errors error
+        display ""
+        error("Finished with exceptions")
       end
 
       Help.group 'Mongo' do |group|
