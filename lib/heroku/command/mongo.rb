@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Heroku::Command
   class Mongo < BaseWithApp
     def initialize(*args)
@@ -60,8 +62,31 @@ module Heroku::Command
       end
 
       def local_mongo_uri
-        url = ENV['MONGO_URL'] || "mongodb://localhost:27017/#{app}"
+        url = ENV['MONGO_URL'] || uri_from_config_file || "mongodb://localhost:27017/#{app}"
         make_uri(url)
+      end
+      
+      def uri_from_mongoid_config_file
+        mongoid_config_path = "config/mongoid.yml"
+
+        if File.exists? mongoid_config_path
+          config = YAML.load_file(mongoid_config_path)
+          %w(development sessions default).map { |k| config = config.fetch(k, {}) }
+          
+          if config['uri'].present?
+            config['uri']
+          else
+            db = config['database'] || app
+            host = config['hosts'][0] if config['hosts'].present?
+            host ||= "localhost:27017"
+            
+            "mongodb://#{host}/#{db}"
+          end
+        end
+      end
+      
+      def uri_from_config_file
+        uri_from_mongoid_config_file # || uri_from_mongo_mapper_config_file
       end
 
       def make_uri(url)
