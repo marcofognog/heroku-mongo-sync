@@ -73,11 +73,11 @@ module Heroku::Command
           config = YAML.load_file(mongoid_config_path)
           %w(development sessions default).map { |k| config = config.fetch(k, {}) }
           
-          if config['uri'].present?
+          if config['uri']
             config['uri']
           else
             db = config['database'] || app
-            host = config['hosts'][0] if config['hosts'].present?
+            host = config['hosts'][0] if config['hosts']
             host ||= "localhost:27017"
             
             "mongodb://#{host}/#{db}"
