@@ -16,6 +16,8 @@ The plugin assumes your local mongo db is running on your localhost with the
 standard settings (port 27017, no auth). It will use a database named after
 the current Heroku app name.
 
+If you are using Mongoid, configuration will be read in `mongoid.yml`.
+
 You can change any of these defining the URL it should connect to, like:
 
     export MONGO_URL = mongodb://user:pass@localhost:1234/db
