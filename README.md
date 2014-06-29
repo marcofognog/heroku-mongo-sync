@@ -29,7 +29,7 @@ For production, it will fetch the MONGO_URL from the Heroku app config vars.
 Get a copy of your production database with:
 
     $ heroku mongo:pull
-    Replacing the myapp db at localhost with genesis.mongohq.com
+    THIS WILL REPLACE ALL DATA IN myapp ON localhost WITH genesis.mongohq.com
     Syncing users (4)... done
     Syncing permissions (4)... done
     Syncing plans (17)... done
@@ -37,10 +37,17 @@ Get a copy of your production database with:
 Update your production database with:
 
     $ heroku mongo:push
-    THIS WILL REPLACE ALL DATA FOR myapp ON genesis.mongohq.com WITH localhost
+    THIS WILL REPLACE ALL DATA IN myapp ON genesis.mongohq.com WITH localhost
     Are you sure? (y/n) y
     Syncing users (4)... done
     Syncing permissions (4)... done
+    Syncing plans (17)... done
+
+To push or pull specific collections:
+
+    $ heroku mongo:push users plans
+    THIS WILL REPLACE users,posts IN myapp ON genesis.mongohq.com WITH localhost
+    Syncing users (4)... done
     Syncing plans (17)... done
 
 As usual, in case you're not inside the app checkout you can specify the app
