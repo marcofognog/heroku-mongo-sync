@@ -120,7 +120,7 @@ module Heroku::Command
 
       def step(count)
         step  = count / 100000 # 1/1000 of a percent
-        step  = 1 if step == 0
+        step == 0 ? 1 : step
       end
 
       Help.group 'Mongo' do |group|
