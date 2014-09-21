@@ -54,9 +54,10 @@ module Heroku::Command
             dest_index_col.insert index
           end
         rescue
-          display("Can't sync indexes.")
+          display " failed. (can be done manually)"
+        else
+          display " done"
         end
-        display " done"
       end
 
       def heroku_mongo_uri
