@@ -30,7 +30,7 @@ module Heroku::Command
 
         origin.collections.each do |col|
           next if col.name =~ /^system\./
-
+          
           dest.drop_collection(col.name)
           dest_col = dest.create_collection(col.name)
 
@@ -45,11 +45,16 @@ module Heroku::Command
         end
 
         display "Syncing indexes...", false
-        dest_index_col = dest.collection('system.indexes')
-        origin_index_col = origin.collection('system.indexes')
-        origin_index_col.find().each do |index|
-          index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
-          dest_index_col.insert index
+        
+        begin
+          dest_index_col = dest.collection('system.indexes')
+          origin_index_col = origin.collection('system.indexes')
+          origin_index_col.find().each do |index|
+            index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
+            dest_index_col.insert index
+          end
+        rescue
+          display("Can't sync indexes.")
         end
         display " done"
       end
