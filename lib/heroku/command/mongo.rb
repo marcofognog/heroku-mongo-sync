@@ -30,7 +30,7 @@ module Heroku::Command
 
         origin.collections.each do |col|
           next if col.name =~ /^system\./
-
+          
           dest.drop_collection(col.name)
           dest_col = dest.create_collection(col.name)
 
@@ -45,13 +45,19 @@ module Heroku::Command
         end
 
         display "Syncing indexes...", false
-        dest_index_col = dest.collection('system.indexes')
-        origin_index_col = origin.collection('system.indexes')
-        origin_index_col.find().each do |index|
-          index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
-          dest_index_col.insert index
+        
+        begin
+          dest_index_col = dest.collection('system.indexes')
+          origin_index_col = origin.collection('system.indexes')
+          origin_index_col.find().each do |index|
+            index['ns'] = index['ns'].sub(origin_index_col.db.name, dest_index_col.db.name)
+            dest_index_col.insert index
+          end
+        rescue
+          display " failed. (can be done manually)"
+        else
+          display " done"
         end
-        display " done"
       end
 
       def heroku_mongo_uri
@@ -91,11 +97,12 @@ module Heroku::Command
 
       def make_uri(url)
         urlsub = url.gsub('local.mongohq.com', 'mongohq.com')
+        urlsub = urlsub.gsub(/\@.+\,([^\,]+)\//) { "@#{$1}/" } # Replica sets
         uri = URI.parse(urlsub)
         raise URI::InvalidURIError unless uri.host
         uri
       rescue URI::InvalidURIError
-        error("Invalid mongo url: #{url}")
+        error("Invalid mongo url: #{urlsub}")
       end
 
       def make_connection(uri)
