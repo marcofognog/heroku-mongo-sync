@@ -96,7 +96,7 @@ module Heroku::Command
         raise URI::InvalidURIError unless uri.host
         uri
       rescue URI::InvalidURIError
-        error("Invalid mongo url: #{url}")
+        error("Invalid mongo url: #{urlsub}")
       end
 
       def make_connection(uri)
