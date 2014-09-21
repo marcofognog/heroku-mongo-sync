@@ -91,7 +91,7 @@ module Heroku::Command
 
       def make_uri(url)
         urlsub = url.gsub('local.mongohq.com', 'mongohq.com')
-        urlsub = urlsub.gsub(/\@.+\,([^,]+)\//, "@#{$1}/") # Replica sets
+        urlsub = urlsub.gsub(/\@.+\,([^\,]+)\//) { "@#{$1}/" } # Replica sets
         uri = URI.parse(urlsub)
         raise URI::InvalidURIError unless uri.host
         uri
